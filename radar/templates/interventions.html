@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Interventions{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+  <h1 class="h3 mb-0">Interventions</h1>
+  <form method="get" class="d-flex gap-2">
+    <select class="form-select form-select-sm" name="status" aria-label="Status">
+      <option value="">All statuses</option>
+      {% for s in statuses %}<option value="{{ s }}" {% if s == status %}selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-sm btn-outline-secondary" type="submit">Filter</button>
+  </form>
+</div>
+<div class="card"><div class="table-responsive">
+<table class="table table-hover mb-0 align-middle">
+  <thead><tr><th>Student</th><th>Action</th><th>Status</th><th>Follow-up</th><th>Recorded by</th><th></th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td><a href="{{ url_for('records.student_detail', student_id=r.student_id) }}">{{ r.first_name }} {{ r.last_name }}</a>
+        <div class="small-muted">{{ r.student_number }} · {{ r.faculty or '—' }}</div></td>
+      <td><div class="fw-semibold small">{{ r.intervention_type }}</div><div class="small">{{ r.description }}</div></td>
+      <td><span class="badge text-bg-light border">{{ r.status }}</span></td>
+      <td class="small">{{ r.follow_up_date or '—' }}</td>
+      <td class="small">{{ r.recorded_by or 'Unknown' }}<div class="small-muted">{{ r.intervention_date[:10] }}</div></td>
+      <td>{% if can_update and r.status != 'Completed' %}
+        <form method="post" action="{{ url_for('records.update_intervention', intervention_id=r.id) }}" class="d-flex gap-1">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <select class="form-select form-select-sm" name="status" aria-label="New status">
+            {% for s in statuses %}<option value="{{ s }}" {% if s == r.status %}selected{% endif %}>{{ s }}</option>{% endfor %}
+          </select>
+          <button class="btn btn-sm btn-outline-primary" type="submit">Save</button>
+        </form>{% endif %}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="6" class="small-muted">No interventions match this filter.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}

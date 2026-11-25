@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Edit student{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Edit {{ student.student_number }}</h1>
+<div class="card"><div class="card-body">
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="row g-3">
+    <div class="col-md-6"><label class="form-label" for="first_name">First name</label><input class="form-control" id="first_name" name="first_name" value="{{ values.first_name or '' }}" required maxlength="100"></div>
+    <div class="col-md-6"><label class="form-label" for="last_name">Last name</label><input class="form-control" id="last_name" name="last_name" value="{{ values.last_name or '' }}" required maxlength="100"></div>
+    <div class="col-md-4"><label class="form-label" for="gender">Gender</label><input class="form-control" id="gender" name="gender" value="{{ values.gender or '' }}" maxlength="20"></div>
+    <div class="col-md-4"><label class="form-label" for="date_of_birth">Date of birth</label><input class="form-control" id="date_of_birth" name="date_of_birth" value="{{ values.date_of_birth or '' }}" placeholder="YYYY-MM-DD"></div>
+    <div class="col-md-4"><label class="form-label" for="year_level">Year level (1–6)</label><input class="form-control" id="year_level" name="year_level" value="{{ values.year_level or '' }}" inputmode="numeric"></div>
+    <div class="col-md-6"><label class="form-label" for="faculty">Faculty</label><input class="form-control" id="faculty" name="faculty" value="{{ values.faculty or '' }}" maxlength="150"></div>
+    <div class="col-md-6"><label class="form-label" for="programme">Programme</label><input class="form-control" id="programme" name="programme" value="{{ values.programme or '' }}" maxlength="150"></div>
+  </div>
+  <div class="mt-4"><button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn btn-link" href="{{ url_for('records.student_detail', student_id=student.id) }}">Cancel</a></div>
+</form>
+</div></div>
+{% endblock %}

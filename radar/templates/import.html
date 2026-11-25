@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Import student data{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">Import student data</h1>
+<p class="small-muted mb-3">Upload one CSV per upload, up to 5 MB and 5,000 rows. The upload is all-or-nothing: if any row has a problem, nothing is saved.</p>
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card"><div class="card-body">
+      <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label class="form-label" for="csv_file">CSV file</label>
+        <input class="form-control mb-3" id="csv_file" name="csv_file" type="file" accept=".csv,text/csv" required>
+        <button class="btn btn-primary" type="submit">Validate and import</button>
+      </form>
+      <hr>
+      <p class="small mb-1"><strong>Required columns:</strong> student_number, first_name, last_name, academic_year.</p>
+      <p class="small mb-2">Academic outcome: 0 = successful, 1 = unsuccessful, blank = not yet known. Blank cells never overwrite values already stored.</p>
+      <a href="{{ url_for('records.import_template') }}" class="small">Download the blank template</a>
+    </div></div>
+  </div>
+  <div class="col-lg-7">
+    {% if result and result.ok %}
+      <div class="alert alert-success">
+        Import complete: {{ result.summary.studentsCreated }} new student(s), {{ result.summary.studentsUpdated }} updated,
+        {{ result.summary.recordsSaved }} record(s) saved. {{ result.duplicateRowsRemoved }} exact duplicate row(s) were ignored.
+      </div>
+      <div class="card"><div class="card-body small">
+        <div class="fw-semibold mb-1">Missing values in this file (left blank, not guessed)</div>
+        <ul class="mb-0">{% for col, n in result.missingValues.items() if n %}<li>{{ col }}: {{ n }}</li>{% else %}<li>None</li>{% endfor %}</ul>
+      </div></div>
+    {% elif result %}
+      <div class="alert alert-danger">{{ result.error }}</div>
+      {% if result.issues %}
+      <div class="card"><div class="table-responsive"><table class="table table-sm mb-0">
+        <thead><tr><th>Line</th><th>Column</th><th>Problem</th></tr></thead>
+        <tbody>{% for i in result.issues[:50] %}<tr><td>{{ i.row }}</td><td>{{ i.column }}</td><td>{{ i.message }}</td></tr>{% endfor %}</tbody>
+      </table></div>
+      {% if result.issues|length > 50 %}<div class="card-body small-muted">Showing the first 50 of {{ result.issues|length }} problems.</div>{% endif %}
+      </div>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

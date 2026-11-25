@@ -1,0 +1,11 @@
+body { background: #f4f6f7; color: #1f2d33; }
+.card { border-color: #dfe6e9; }
+.metric { font-size: 2rem; font-weight: 650; color: #294454; }
+.risk-badge { font-size: .8rem; padding: .3em .6em; border-radius: 999px; font-weight: 600; }
+.risk-High { background: #fae9e6; color: #9a3d33; }
+.risk-Medium { background: #faf1de; color: #7a5a14; }
+.risk-Low { background: #e2f3ef; color: #2e6d62; }
+.table td, .table th { vertical-align: middle; }
+.small-muted { font-size: .85rem; color: #667e87; }
+.fictional-note { font-size: .85rem; color: #6b6f2a; background: #fbf9e7; border: 1px solid #efe9b8; border-radius: .5rem; padding: .5rem .75rem; }
+.auth-card { max-width: 420px; margin: 8vh auto; }

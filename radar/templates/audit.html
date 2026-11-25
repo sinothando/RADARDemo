@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Audit log{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+  <h1 class="h3 mb-0">Audit log</h1>
+  <form method="get" class="d-flex gap-2">
+    <select class="form-select form-select-sm" name="action" aria-label="Action">
+      <option value="">All actions</option>
+      {% for a in actions %}<option value="{{ a }}" {% if a == action %}selected{% endif %}>{{ a }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-sm btn-outline-secondary" type="submit">Filter</button>
+  </form>
+</div>
+<div class="card"><div class="table-responsive">
+<table class="table table-sm mb-0 align-middle">
+  <thead><tr><th>When (UTC)</th><th>User</th><th>Email</th><th>Action</th><th>Detail</th><th>IP</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr><td class="small text-nowrap">{{ r.occurred_at[:19].replace('T', ' ') }}</td>
+        <td class="small">{{ r.full_name or '—' }}</td><td class="small">{{ r.email or '—' }}</td>
+        <td><span class="badge text-bg-light border">{{ r.action }}</span></td>
+        <td class="small">{{ r.detail or '' }}</td><td class="small">{{ r.ip_address or '—' }}</td></tr>
+  {% else %}
+    <tr><td colspan="6" class="small-muted">No events recorded.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+<p class="small-muted mt-2">Showing the latest 300 events.</p>
+{% endblock %}

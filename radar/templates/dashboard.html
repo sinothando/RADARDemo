@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Overview{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">Overview</h1>
+<p class="small-muted mb-3">Risk across the current cohort. {% if data.run_id %}Latest scoring run is shown.{% else %}No predictions yet.{% endif %}</p>
+<div class="fictional-note mb-4">Shows fictional demo data unless an approved institutional dataset has been imported.</div>
+
+{% if not data.run_id %}
+  <div class="alert alert-info">No predictions yet. A System Administrator needs to train a model and score the cohort on the Model page.</div>
+{% endif %}
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3"><div class="card h-100 p-3"><div class="small-muted">Students on record</div><div class="metric">{{ data.total_students }}</div></div></div>
+  <div class="col-6 col-lg-3"><div class="card h-100 p-3"><div class="small-muted">Scored this run</div><div class="metric">{{ data.scored }}</div></div></div>
+  <div class="col-6 col-lg-3"><div class="card h-100 p-3"><div class="small-muted">High risk</div><div class="metric text-danger">{{ data.risk_counts.High }}</div></div></div>
+  <div class="col-6 col-lg-3"><div class="card h-100 p-3"><div class="small-muted">Active model</div>
+    <div class="fw-semibold">{% if data.model %}{{ data.model.algorithm }}{% else %}None{% endif %}</div>
+    {% if data.model %}<div class="small-muted">{{ data.model.version }}</div>{% endif %}</div></div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-4"><div class="card h-100"><div class="card-header bg-white fw-semibold">Risk mix</div>
+    <div class="card-body">{% if data.charts.risk %}<div id="risk-chart"></div>{% else %}<p class="small-muted">Nothing to chart yet.</p>{% endif %}</div></div></div>
+  <div class="col-lg-8"><div class="card h-100"><div class="card-header bg-white fw-semibold">Risk by faculty</div>
+    <div class="card-body">{% if data.charts.faculty %}<div id="faculty-chart"></div>{% else %}<p class="small-muted">Nothing to chart yet.</p>{% endif %}</div></div></div>
+  <div class="col-12"><div class="card"><div class="card-header bg-white fw-semibold">Unsuccessful outcomes by academic year</div>
+    <div class="card-body">{% if data.charts.outcome %}<div id="outcome-chart"></div>{% else %}<p class="small-muted">No recorded outcomes yet.</p>{% endif %}</div></div></div>
+</div>
+
+{% if g.user.role in ('system_admin', 'lecturer', 'academic_advisor') %}
+<div class="card mb-4">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <span class="fw-semibold">Highest-risk students</span>
+    <a href="{{ url_for('records.predictions', risk='High') }}" class="small">All high-risk students</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table mb-0">
+      <thead><tr><th>Student</th><th>Faculty</th><th>Failure probability</th><th>Main drivers</th></tr></thead>
+      <tbody>
+      {% for row in data.high_risk %}
+        <tr>
+          <td><a href="{{ url_for('records.student_detail', student_id=row.student_id) }}">{{ row.first_name }} {{ row.last_name }}</a>
+              <div class="small-muted">{{ row.student_number }}</div></td>
+          <td>{{ row.faculty or '—' }}</td>
+          <td>{{ '%.0f' | format(row.failure_probability * 100) }}%</td>
+          <td class="small">{{ row.drivers or '—' }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4" class="small-muted">No high-risk students in the latest run.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="alert alert-secondary">Faculty-level view. Individual student records are not shown to this role.</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{% if data.charts.risk or data.charts.faculty or data.charts.outcome %}
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<script>
+  const config = {responsive: true, displayModeBar: false};
+  {% if data.charts.risk %}Plotly.newPlot("risk-chart", {{ data.charts.risk.data|tojson }}, {{ data.charts.risk.layout|tojson }}, config);{% endif %}
+  {% if data.charts.faculty %}Plotly.newPlot("faculty-chart", {{ data.charts.faculty.data|tojson }}, {{ data.charts.faculty.layout|tojson }}, config);{% endif %}
+  {% if data.charts.outcome %}Plotly.newPlot("outcome-chart", {{ data.charts.outcome.data|tojson }}, {{ data.charts.outcome.layout|tojson }}, config);{% endif %}
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Risk explanation{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">Risk explanation: {{ student.first_name }} {{ student.last_name }}</h1>
+<p class="small-muted mb-3">Model {{ latest.version }} · scored {{ latest.prediction_date[:10] }} · estimate {{ '%.1f' | format(latest.failure_probability * 100) }}% ({{ latest.risk_level }})</p>
+<div class="card mb-3"><div class="card-body">
+  <div class="fw-semibold mb-2">How this was calculated</div>
+  <p class="small mb-0">{{ explanation.method }}. Positive contributions push the estimate towards academic failure; negative contributions pull it away. Each bar shows one factor's influence on this student's estimate.</p>
+</div></div>
+<div class="card"><div class="card-body">
+  {% for d in explanation.drivers %}
+    {% set width = [((d.contribution | abs) * 400) | round | int, 100] | min %}
+    <div class="mb-3">
+      <div class="d-flex justify-content-between small">
+        <span>{{ d.feature }}{% if d.value is not none %} <span class="small-muted">(value {{ '%.2f' | format(d.value) }})</span>{% endif %}</span>
+        <span>{{ d.direction }} ({{ '%+.3f' | format(d.contribution) }})</span>
+      </div>
+      <div class="progress" style="height: 10px;" role="img" aria-label="{{ d.feature }} {{ d.direction }}">
+        <div class="progress-bar {% if d.contribution > 0 %}bg-danger{% else %}bg-success{% endif %}" style="width: {{ width }}%"></div>
+      </div>
+    </div>
+  {% else %}
+    <p class="small-muted mb-0">No factor had a measurable influence.</p>
+  {% endfor %}
+</div></div>
+<a class="btn btn-link mt-3" href="{{ url_for('records.student_detail', student_id=student.id) }}">Back to student record</a>
+{% endblock %}

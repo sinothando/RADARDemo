@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Model{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">Risk model</h1>
+<p class="small-muted mb-3">Train compares Logistic Regression, Decision Tree, Random Forest and XGBoost on the newest academic year held out. Score applies the active model to the newest academic year.</p>
+<div class="card mb-4"><div class="card-body d-flex flex-wrap gap-2">
+  <form method="post" action="{{ url_for('admin.train_model') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-primary" type="submit">1. Train and compare models</button>
+  </form>
+  <form method="post" action="{{ url_for('admin.score_model') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-outline-primary" type="submit">2. Score the current cohort</button>
+  </form>
+  <a class="btn btn-outline-secondary" href="{{ url_for('records.import_students') }}">Import data first</a>
+</div></div>
+
+{% for v in versions %}
+<div class="card mb-3 {% if v.is_active %}border-success{% endif %}">
+  <div class="card-header bg-white d-flex justify-content-between flex-wrap gap-2">
+    <span class="fw-semibold">{{ v.version }} · selected {{ v.algorithm }}
+      {% if v.is_active %}<span class="badge text-bg-success ms-2">Active</span>{% endif %}</span>
+    <span class="small-muted">{{ v.created_at[:16] | replace('T', ' ') }} UTC</span>
+  </div>
+  <div class="card-body">
+    <div class="small-muted mb-2">Validation year {{ v.validation.validationAcademicYear }} · {{ v.validation.trainingRows }} training rows · {{ v.validation.validationRows }} validation rows · selected by {{ v.validation.selectionMetric }}</div>
+    <div class="table-responsive"><table class="table table-sm mb-2">
+      <thead><tr><th>Algorithm</th><th>Implementation</th><th>F1</th><th>Recall</th><th>Precision</th><th>ROC-AUC</th><th>Accuracy</th></tr></thead>
+      <tbody>
+      {% for m in v.metrics %}
+        <tr class="{% if m.algorithm == v.algorithm %}table-success{% endif %}">
+          <td>{{ m.algorithm }}</td><td class="small">{{ m.implementation }}</td>
+          <td>{{ '%.3f' | format(m.f1) }}</td><td>{{ '%.3f' | format(m.recall) }}</td>
+          <td>{{ '%.3f' | format(m.precision) }}</td><td>{{ '%.3f' | format(m.rocAuc) }}</td><td>{{ '%.3f' | format(m.accuracy) }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+    <div class="small-muted mb-2">{{ v.validation.validationMethod }}</div>
+    {% for w in v.validation.warnings %}<div class="small text-warning-emphasis">⚠ {{ w }}</div>{% endfor %}
+    {% if not v.is_active %}
+    <form method="post" action="{{ url_for('admin.activate_model', version_id=v.id) }}" class="mt-2">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-sm btn-outline-secondary" type="submit">Make this the active model</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% else %}
+<div class="alert alert-info">No model has been trained yet.</div>
+{% endfor %}
+{% endblock %}

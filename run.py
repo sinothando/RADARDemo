@@ -1,0 +1,9 @@
+"""Start the RADAR web app: python run.py  (then open http://127.0.0.1:5000)."""
+import os
+
+from radar import create_app
+
+app = create_app()
+
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=5000, debug=os.environ.get("RADAR_DEBUG") == "1")

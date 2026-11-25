@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}RADAR{% endblock %} · RADAR Early Warning</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+{% if g.user %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-semibold" href="{{ url_for('records.dashboard') }}">RADAR</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainnav" aria-controls="mainnav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainnav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('records.dashboard') }}">Overview</a></li>
+        {% if g.user.role in ('system_admin', 'lecturer', 'academic_advisor') %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('records.students') }}">Students</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('records.predictions') }}">Predictions</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('records.interventions') }}">Interventions</a></li>
+        {% endif %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('records.reports') }}">Reports</a></li>
+        {% if g.user.role == 'system_admin' %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('records.import_students') }}">Import data</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.model') }}">Model</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.users') }}">Users</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.audit_log') }}">Audit log</a></li>
+        {% endif %}
+      </ul>
+      <span class="navbar-text me-3 small">{{ g.user.full_name }} · {{ ROLE_LABELS[g.user.role] }}</span>
+      <a class="btn btn-outline-light btn-sm me-2" href="{{ url_for('auth.change_password') }}">Change password</a>
+      <form method="post" action="{{ url_for('auth.logout') }}" class="d-inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-outline-light btn-sm" type="submit">Sign out</button>
+      </form>
+    </div>
+  </div>
+</nav>
+{% endif %}
+<main class="container-fluid px-3 px-md-4 pb-4">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+<footer class="container-fluid px-4 pb-4 small text-muted">
+  Prototype for CPT580S. Demo records are fictional unless an approved institutional dataset is imported.
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Predictions{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+  <div><h1 class="h3 mb-0">Risk predictions</h1>
+  <div class="small-muted">{% if model %}Model {{ model.version }} ({{ model.algorithm }}){% else %}No active model{% endif %}</div></div>
+  <div class="btn-group btn-group-sm" role="group" aria-label="Filter by risk">
+    <a class="btn btn-outline-secondary {% if not risk %}active{% endif %}" href="{{ url_for('records.predictions') }}">All</a>
+    <a class="btn btn-outline-danger {% if risk == 'High' %}active{% endif %}" href="{{ url_for('records.predictions', risk='High') }}">High</a>
+    <a class="btn btn-outline-warning {% if risk == 'Medium' %}active{% endif %}" href="{{ url_for('records.predictions', risk='Medium') }}">Medium</a>
+    <a class="btn btn-outline-success {% if risk == 'Low' %}active{% endif %}" href="{{ url_for('records.predictions', risk='Low') }}">Low</a>
+  </div>
+</div>
+<p class="small-muted">Risk bands: Low below 30%, Medium 30–59%, High 60% or more. These support, and do not replace, professional judgement.</p>
+{% if not has_run %}<div class="alert alert-info">No scoring run yet. The System Administrator needs to score the cohort on the Model page.</div>{% endif %}
+<div class="card"><div class="table-responsive">
+<table class="table table-hover mb-0">
+  <thead><tr><th>Student</th><th>Faculty</th><th>Risk</th><th>Probability</th><th>Main drivers</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td><a href="{{ url_for('records.student_detail', student_id=r.student_id) }}">{{ r.first_name }} {{ r.last_name }}</a>
+          <div class="small-muted">{{ r.student_number }}</div></td>
+      <td>{{ r.faculty or '—' }}</td>
+      <td><span class="risk-badge risk-{{ r.risk_level }}">{{ r.risk_level }}</span></td>
+      <td>{{ '%.1f' | format(r.failure_probability * 100) }}%</td>
+      <td class="small">{{ r.drivers or '—' }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="5" class="small-muted">No students to show.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}

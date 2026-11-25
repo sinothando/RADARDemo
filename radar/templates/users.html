@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">User accounts</h1>
+  <a class="btn btn-primary btn-sm" href="{{ url_for('admin.user_new') }}">Add user</a>
+</div>
+<div class="card"><div class="table-responsive">
+<table class="table table-hover mb-0 align-middle">
+  <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Faculty</th><th>Status</th><th>Last sign-in</th><th></th></tr></thead>
+  <tbody>
+  {% for u in rows %}
+    <tr>
+      <td>{{ u.full_name }}</td><td class="small">{{ u.email }}</td><td>{{ ROLE_LABELS[u.role] }}</td>
+      <td class="small">{{ u.faculty or '—' }}</td>
+      <td>{% if u.is_active %}<span class="badge text-bg-success">Active</span>{% else %}<span class="badge text-bg-secondary">Inactive</span>{% endif %}
+          {% if u.locked_until %}<span class="badge text-bg-warning">Locked</span>{% endif %}</td>
+      <td class="small">{{ (u.last_login or 'Never')[:16] | replace('T', ' ') }}</td>
+      <td><a href="{{ url_for('admin.user_edit', user_id=u.id) }}">Edit</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}
